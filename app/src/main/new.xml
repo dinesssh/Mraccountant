@@ -1,0 +1,61 @@
+<!-- QUICK ACTIONS ROW -->
+<LinearLayout android:layout_width="match_parent" android:layout_height="wrap_content"
+    android:orientation="horizontal" android:weightSum="4" android:layout_marginBottom="24dp">
+
+    <!-- 1. Add Entry -->
+    <LinearLayout android:id="@+id/btnNavAddEntry" android:layout_width="0dp" android:layout_height="wrap_content"
+        android:layout_weight="1" android:gravity="center" android:orientation="vertical">
+        <com.google.android.material.card.MaterialCardView android:layout_width="56dp"
+            android:layout_height="56dp" app:cardCornerRadius="28dp" app:cardBackgroundColor="#FFEB3B"
+            app:cardElevation="2dp">
+            <ImageView android:layout_width="24dp" android:layout_height="24dp"
+                android:layout_gravity="center" android:src="@android:drawable/ic_input_add"
+                app:tint="#000000" />
+        </com.google.android.material.card.MaterialCardView>
+        <TextView android:layout_width="wrap_content" android:layout_height="wrap_content"
+            android:text="Add" android:textSize="10sp" android:layout_marginTop="4dp" />
+    </LinearLayout>
+
+    <!-- 2. Summary -->
+    <LinearLayout android:id="@+id/btnNavSummary" android:layout_width="0dp" android:layout_height="wrap_content"
+        android:layout_weight="1" android:gravity="center" android:orientation="vertical">
+        <com.google.android.material.card.MaterialCardView android:layout_width="56dp"
+            android:layout_height="56dp" app:cardCornerRadius="28dp" app:cardBackgroundColor="#FFFFFF"
+            app:cardElevation="2dp">
+            <ImageView android:layout_width="24dp" android:layout_height="24dp"
+                android:layout_gravity="center" android:src="@android:drawable/ic_menu_today"
+                app:tint="#424242" />
+        </com.google.android.material.card.MaterialCardView>
+        <TextView android:layout_width="wrap_content" android:layout_height="wrap_content"
+            android:text="Summary" android:textSize="10sp" android:layout_marginTop="4dp" />
+    </LinearLayout>
+
+    <!-- 3. Birthday Reminder (PINK ICON) -->
+    <LinearLayout android:id="@+id/btnNavBirthday" android:layout_width="0dp" android:layout_height="wrap_content"
+        android:layout_weight="1" android:gravity="center" android:orientation="vertical">
+        <com.google.android.material.card.MaterialCardView android:layout_width="56dp"
+            android:layout_height="56dp" app:cardCornerRadius="28dp" app:cardBackgroundColor="#FCE4EC"
+            app:cardElevation="2dp">
+            <ImageView android:layout_width="24dp" android:layout_height="24dp"
+                android:layout_gravity="center" android:src="@android:drawable/btn_star_big_on"
+                app:tint="#E91E63" />
+        </com.google.android.material.card.MaterialCardView>
+        <TextView android:layout_width="wrap_content" android:layout_height="wrap_content"
+            android:text="Reminder" android:textSize="10sp" android:layout_marginTop="4dp"
+            android:textColor="#E91E63" android:textStyle="bold" />
+    </LinearLayout>
+
+    <!-- 4. Reports -->
+    <LinearLayout android:id="@+id/btnNavReports" android:layout_width="0dp" android:layout_height="wrap_content"
+        android:layout_weight="1" android:gravity="center" android:orientation="vertical">
+        <com.google.android.material.card.MaterialCardView android:layout_width="56dp"
+            android:layout_height="56dp" app:cardCornerRadius="28dp" app:cardBackgroundColor="#FFFFFF"
+            app:cardElevation="2dp">
+            <ImageView android:layout_width="24dp" android:layout_height="24dp"
+                android:layout_gravity="center" android:src="@android:drawable/ic_menu_sort_by_size"
+                app:tint="#424242" />
+        </com.google.android.material.card.MaterialCardView>
+        <TextView android:layout_width="wrap_content" android:layout_height="wrap_content"
+            android:text="Reports" android:textSize="10sp" android:layout_marginTop="4dp" />
+    </LinearLayout>
+</LinearLayout>
