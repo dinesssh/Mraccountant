@@ -57,6 +57,31 @@
             android:orientation="vertical"
             android:padding="16dp">
 
+            <!-- Welcome & Launch Header -->
+            <LinearLayout
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:orientation="vertical"
+                android:layout_marginBottom="16dp">
+                
+                <TextView
+                    android:id="@+id/tvWelcomeUser"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:text="Welcome, User"
+                    android:textSize="20sp"
+                    android:textStyle="bold"
+                    android:textColor="@color/on_surface"/>
+
+                <TextView
+                    android:id="@+id/tvLaunchCount"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:text="You opened this app 0 times"
+                    android:textSize="12sp"
+                    android:textColor="@color/text_grey"/>
+            </LinearLayout>
+
             <!-- Opening Balance Card -->
             <com.google.android.material.card.MaterialCardView
                 style="@style/Widget.App.Card"
@@ -104,6 +129,50 @@
                             app:tint="#1976D2" />
                     </com.google.android.material.card.MaterialCardView>
                 </RelativeLayout>
+            </com.google.android.material.card.MaterialCardView>
+
+            <!-- Insights & Last Expense Card -->
+            <com.google.android.material.card.MaterialCardView
+                style="@style/Widget.App.Card"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:layout_marginTop="16dp">
+
+                <LinearLayout
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:orientation="vertical"
+                    android:padding="16dp">
+
+                    <TextView
+                        android:id="@+id/tvInsightMessage"
+                        android:layout_width="match_parent"
+                        android:layout_height="wrap_content"
+                        android:text="Analyzing your spending..."
+                        android:textColor="@color/on_surface"
+                        android:textSize="14sp"
+                        android:textStyle="bold"/>
+
+                    <TextView
+                        android:id="@+id/tvLastExpense"
+                        android:layout_width="match_parent"
+                        android:layout_height="wrap_content"
+                        android:layout_marginTop="8dp"
+                        android:text="Last Expense: ₹0"
+                        android:textColor="@color/text_grey"
+                        android:textSize="13sp"/>
+
+                    <TextView
+                        android:id="@+id/tvBudgetWarning"
+                        android:layout_width="match_parent"
+                        android:layout_height="wrap_content"
+                        android:layout_marginTop="8dp"
+                        android:text="Budget Status: Normal"
+                        android:textColor="@android:color/holo_green_dark"
+                        android:textSize="13sp"
+                        android:textStyle="bold"
+                        android:visibility="gone"/>
+                </LinearLayout>
             </com.google.android.material.card.MaterialCardView>
 
             <LinearLayout
@@ -243,6 +312,84 @@
                         android:textColor="@color/on_primary"
                         android:textSize="48sp" />
                 </RelativeLayout>
+            </com.google.android.material.card.MaterialCardView>
+
+            <!-- Budget Progress Card -->
+            <com.google.android.material.card.MaterialCardView
+                style="@style/Widget.App.Card"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:layout_marginTop="16dp">
+
+                <LinearLayout
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:orientation="vertical"
+                    android:padding="16dp">
+
+                    <RelativeLayout
+                        android:layout_width="match_parent"
+                        android:layout_height="wrap_content">
+                        <TextView
+                            android:layout_width="wrap_content"
+                            android:layout_height="wrap_content"
+                            android:text="Budget Usage"
+                            android:textColor="@color/on_surface"
+                            android:textStyle="bold"/>
+                        <TextView
+                            android:id="@+id/tvBudgetPercent"
+                            android:layout_width="wrap_content"
+                            android:layout_height="wrap_content"
+                            android:layout_alignParentEnd="true"
+                            android:text="0%"
+                            android:textColor="@color/on_surface"
+                            android:textStyle="bold"/>
+                    </RelativeLayout>
+
+                    <ProgressBar
+                        android:id="@+id/pbBudgetProgress"
+                        style="?android:attr/progressBarStyleHorizontal"
+                        android:layout_width="match_parent"
+                        android:layout_height="wrap_content"
+                        android:layout_marginTop="8dp"
+                        android:progress="0"
+                        android:max="100"/>
+
+                    <LinearLayout
+                        android:layout_width="match_parent"
+                        android:layout_height="wrap_content"
+                        android:layout_marginTop="8dp"
+                        android:orientation="horizontal"
+                        android:weightSum="3">
+                        
+                        <TextView
+                            android:id="@+id/tvBudgetLimit"
+                            android:layout_width="0dp"
+                            android:layout_height="wrap_content"
+                            android:layout_weight="1"
+                            android:text="Limit: ₹0"
+                            android:textColor="@color/text_grey"
+                            android:textSize="11sp"/>
+                        <TextView
+                            android:id="@+id/tvTotalSpent"
+                            android:layout_width="0dp"
+                            android:layout_height="wrap_content"
+                            android:layout_weight="1"
+                            android:text="Spent: ₹0"
+                            android:textColor="@color/text_grey"
+                            android:textSize="11sp"
+                            android:gravity="center"/>
+                        <TextView
+                            android:id="@+id/tvRemainingBudget"
+                            android:layout_width="0dp"
+                            android:layout_height="wrap_content"
+                            android:layout_weight="1"
+                            android:text="Rem: ₹0"
+                            android:textColor="@color/text_grey"
+                            android:textSize="11sp"
+                            android:gravity="end"/>
+                    </LinearLayout>
+                </LinearLayout>
             </com.google.android.material.card.MaterialCardView>
 
             <TextView

@@ -1,11 +1,15 @@
 package com.example.mraccount
 
 import android.Manifest
+import android.content.Context
 import android.content.Intent
+import android.graphics.Color
 import android.os.Build
 import android.os.Bundle
 import android.view.Menu
 import android.view.MenuItem
+import android.view.View
+import android.widget.ProgressBar
 import android.widget.TextView
 import android.widget.Toast
 import androidx.activity.OnBackPressedCallback
@@ -20,7 +24,8 @@ import com.google.android.material.card.MaterialCardView
 class DashboardActivity : AppCompatActivity() {
 
     private lateinit var locationHelper: LocationHelper
-    private lateinit var tvCurrentLocation: TextView
+    private var tvCurrentLocation: TextView? = null
+    private val PREF_NAME = "mr_accountant_prefs"
 
     private val requestPermissionLauncher = registerForActivityResult(
         ActivityResultContracts.RequestMultiplePermissions()
@@ -29,13 +34,27 @@ class DashboardActivity : AppCompatActivity() {
             permissions[Manifest.permission.ACCESS_COARSE_LOCATION] == true) {
             fetchAndShowLocation()
         } else {
-            tvCurrentLocation.text = "Current Location: Permission Denied"
+            tvCurrentLocation?.text = "Current Location: Permission Denied"
         }
     }
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         setContentView(R.layout.activity_dashboard)
+
+        try {
+            // Increment App Launch Count
+            val prefs = getSharedPreferences(PREF_NAME, Context.MODE_PRIVATE)
+            val launchCount = prefs.getInt("app_launch_count", 0) + 1
+            prefs.edit().putInt("app_launch_count", launchCount).apply()
+
+            // Display Launch Count and Welcome Message
+            findViewById<TextView>(R.id.tvLaunchCount)?.text = "You opened this app $launchCount times"
+            val userName = prefs.getString("user_name", "User")
+            findViewById<TextView>(R.id.tvWelcomeUser)?.text = "Welcome, $userName"
+        } catch (e: Exception) {
+            e.printStackTrace()
+        }
 
         // Start Foreground Reminder Service
         startReminderService()
@@ -44,8 +63,10 @@ class DashboardActivity : AppCompatActivity() {
         tvCurrentLocation = findViewById(R.id.tvCurrentLocation)
 
         val toolbar = findViewById<MaterialToolbar>(R.id.toolbar)
-        setSupportActionBar(toolbar)
-        supportActionBar?.setDisplayShowTitleEnabled(false) // Hide default app title
+        if (toolbar != null) {
+            setSupportActionBar(toolbar)
+            supportActionBar?.setDisplayShowTitleEnabled(false) // Hide default app title
+        }
 
         val callback = object : OnBackPressedCallback(true) {
             override fun handleOnBackPressed() {
@@ -60,27 +81,27 @@ class DashboardActivity : AppCompatActivity() {
         val btnBudget = findViewById<MaterialCardView>(R.id.btnNavBudget)
         val bottomNavigation = findViewById<BottomNavigationView>(R.id.bottomNavigation)
 
-        btnAddEntry.setOnClickListener {
+        btnAddEntry?.setOnClickListener {
             val intent = Intent(this, AddEntryActivity::class.java)
             startActivity(intent)
         }
 
-        btnSummary.setOnClickListener {
+        btnSummary?.setOnClickListener {
             val intent = Intent(this, SummaryActivity::class.java)
             startActivity(intent)
         }
 
-        btnBirthday.setOnClickListener {
+        btnBirthday?.setOnClickListener {
             val intent = Intent(this, BirthdayReminderActivity::class.java)
             startActivity(intent)
         }
 
-        btnBudget.setOnClickListener {
+        btnBudget?.setOnClickListener {
             val intent = Intent(this, BudgetActivity::class.java)
             startActivity(intent)
         }
 
-        bottomNavigation.setOnItemSelectedListener { item ->
+        bottomNavigation?.setOnItemSelectedListener { item ->
             when (item.itemId) {
                 R.id.nav_dashboard -> true
                 R.id.nav_entries -> {
@@ -103,12 +124,84 @@ class DashboardActivity : AppCompatActivity() {
         checkLocationPermissions()
     }
 
+    override fun onResume() {
+        super.onResume()
+        try {
+            updateBudgetUI()
+        } catch (e: Exception) {
+            e.printStackTrace()
+        }
+    }
+
+    private fun updateBudgetUI() {
+        try {
+            val prefs = getSharedPreferences(PREF_NAME, Context.MODE_PRIVATE)
+            val budgetLimit = prefs.getFloat("budget_limit", 0.0f)
+            val totalExpense = prefs.getFloat("total_expense", 0.0f)
+            val lastExpense = prefs.getFloat("last_expense", 0.0f)
+            
+            val remaining = budgetLimit - totalExpense
+            // Safety: Avoid divide-by-zero
+            val percent = if (budgetLimit > 0) ((totalExpense / budgetLimit) * 100).toInt() else 0
+
+            findViewById<TextView>(R.id.tvBudgetLimit)?.text = "Limit: ₹$budgetLimit"
+            findViewById<TextView>(R.id.tvTotalSpent)?.text = "Spent: ₹$totalExpense"
+            findViewById<TextView>(R.id.tvRemainingBudget)?.text = "Rem: ₹$remaining"
+            findViewById<TextView>(R.id.tvBudgetPercent)?.text = "$percent%"
+            findViewById<TextView>(R.id.tvLastExpense)?.text = "Last Expense: ₹$lastExpense"
+
+            val progressBar = findViewById<ProgressBar>(R.id.pbBudgetProgress)
+            progressBar?.let { 
+                it.progress = if (percent > 100) 100 else percent
+            }
+            
+            // Budget Warning System
+            val tvWarning = findViewById<TextView>(R.id.tvBudgetWarning)
+            if (tvWarning != null) {
+                when {
+                    percent >= 100 -> {
+                        tvWarning.text = "Budget exceeded"
+                        tvWarning.setTextColor(ContextCompat.getColor(this, android.R.color.holo_red_dark))
+                        tvWarning.visibility = View.VISIBLE
+                    }
+                    percent >= 80 -> {
+                        tvWarning.text = "Budget almost reached"
+                        tvWarning.setTextColor(ContextCompat.getColor(this, android.R.color.holo_orange_dark))
+                        tvWarning.visibility = View.VISIBLE
+                    }
+                    else -> tvWarning.visibility = View.GONE
+                }
+            }
+
+            // Spending Insight System
+            val tvInsight = findViewById<TextView>(R.id.tvInsightMessage)
+            tvInsight?.text = when {
+                percent < 30 -> "Great! You are managing your budget well."
+                percent in 30..70 -> "Keep tracking your expenses."
+                else -> "You are close to your budget limit."
+            }
+
+            // Visual indicator for over-budget on percent text
+            if (totalExpense > budgetLimit) {
+                findViewById<TextView>(R.id.tvBudgetPercent)?.setTextColor(ContextCompat.getColor(this, android.R.color.holo_red_dark))
+            } else {
+                findViewById<TextView>(R.id.tvBudgetPercent)?.setTextColor(Color.BLACK)
+            }
+        } catch (e: Exception) {
+            e.printStackTrace()
+        }
+    }
+
     private fun startReminderService() {
-        val serviceIntent = Intent(this, ReminderService::class.java)
-        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
-            ContextCompat.startForegroundService(this, serviceIntent)
-        } else {
-            startService(serviceIntent)
+        try {
+            val serviceIntent = Intent(this, ReminderService::class.java)
+            if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
+                ContextCompat.startForegroundService(this, serviceIntent)
+            } else {
+                startService(serviceIntent)
+            }
+        } catch (e: Exception) {
+            e.printStackTrace()
         }
     }
 
@@ -127,7 +220,7 @@ class DashboardActivity : AppCompatActivity() {
 
     private fun fetchAndShowLocation() {
         locationHelper.getCurrentCity { city ->
-            tvCurrentLocation.text = city ?: "Mountain View" // Defaulting for visual consistency if null
+            tvCurrentLocation?.text = city ?: "Mountain View" // Defaulting for visual consistency if null
         }
     }
 

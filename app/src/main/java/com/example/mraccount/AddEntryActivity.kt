@@ -33,6 +33,7 @@ class AddEntryActivity : AppCompatActivity() {
     private val KEY_BUDGET = "budget_limit"
     private val KEY_TOTAL = "total_expense"
     private val KEY_ALERT_SENT = "alert_sent"
+    private val KEY_LAST_EXPENSE = "last_expense"
 
     private val requestPermissionLauncher = registerForActivityResult(
         ActivityResultContracts.RequestMultiplePermissions()
@@ -122,6 +123,9 @@ class AddEntryActivity : AppCompatActivity() {
             
             // Update total in prefs
             prefs.edit().putFloat(KEY_TOTAL, newTotal).apply()
+            
+            // Save last expense
+            prefs.edit().putFloat(KEY_LAST_EXPENSE, amount.toFloat()).apply()
 
             // SMS Alert Logic
             if (newTotal > budgetLimit && !alertSent) {
