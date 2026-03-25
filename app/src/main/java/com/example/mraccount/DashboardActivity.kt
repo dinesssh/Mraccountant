@@ -4,6 +4,7 @@ import android.Manifest
 import android.content.Context
 import android.content.Intent
 import android.graphics.Color
+import android.media.MediaPlayer
 import android.os.Build
 import android.os.Bundle
 import android.view.Menu
@@ -26,6 +27,7 @@ class DashboardActivity : AppCompatActivity() {
     private lateinit var locationHelper: LocationHelper
     private var tvCurrentLocation: TextView? = null
     private val PREF_NAME = "mr_accountant_prefs"
+    private var mediaPlayer: MediaPlayer? = null
 
     private val requestPermissionLauncher = registerForActivityResult(
         ActivityResultContracts.RequestMultiplePermissions()
@@ -79,6 +81,7 @@ class DashboardActivity : AppCompatActivity() {
         val btnSummary = findViewById<MaterialCardView>(R.id.btnNavSummary)
         val btnBirthday = findViewById<MaterialCardView>(R.id.btnNavBirthday)
         val btnBudget = findViewById<MaterialCardView>(R.id.btnNavBudget)
+        val btnHelpVideo = findViewById<MaterialCardView>(R.id.btnHelpVideo)
         val bottomNavigation = findViewById<BottomNavigationView>(R.id.bottomNavigation)
 
         btnAddEntry?.setOnClickListener {
@@ -98,6 +101,11 @@ class DashboardActivity : AppCompatActivity() {
 
         btnBudget?.setOnClickListener {
             val intent = Intent(this, BudgetActivity::class.java)
+            startActivity(intent)
+        }
+
+        btnHelpVideo?.setOnClickListener {
+            val intent = Intent(this, HelpVideoActivity::class.java)
             startActivity(intent)
         }
 
@@ -139,6 +147,7 @@ class DashboardActivity : AppCompatActivity() {
             val budgetLimit = prefs.getFloat("budget_limit", 0.0f)
             val totalExpense = prefs.getFloat("total_expense", 0.0f)
             val lastExpense = prefs.getFloat("last_expense", 0.0f)
+            val alertSent = prefs.getBoolean("alert_sent", false)
             
             val remaining = budgetLimit - totalExpense
             // Safety: Avoid divide-by-zero
@@ -163,13 +172,23 @@ class DashboardActivity : AppCompatActivity() {
                         tvWarning.text = "Budget exceeded"
                         tvWarning.setTextColor(ContextCompat.getColor(this, android.R.color.holo_red_dark))
                         tvWarning.visibility = View.VISIBLE
+                        
+                        // Play alert sound if not already sent
+                        if (!alertSent && budgetLimit > 0) {
+                            playBudgetAlertSound()
+                            prefs.edit().putBoolean("alert_sent", true).apply()
+                        }
                     }
                     percent >= 80 -> {
                         tvWarning.text = "Budget almost reached"
                         tvWarning.setTextColor(ContextCompat.getColor(this, android.R.color.holo_orange_dark))
                         tvWarning.visibility = View.VISIBLE
                     }
-                    else -> tvWarning.visibility = View.GONE
+                    else -> {
+                        tvWarning.visibility = View.GONE
+                        // Reset alert flag if we are below budget (optional, depends on requirement)
+                        // But requirement says "Prevent repeated playback using the existing alert_sent flag"
+                    }
                 }
             }
 
@@ -187,6 +206,19 @@ class DashboardActivity : AppCompatActivity() {
             } else {
                 findViewById<TextView>(R.id.tvBudgetPercent)?.setTextColor(Color.BLACK)
             }
+        } catch (e: Exception) {
+            e.printStackTrace()
+        }
+    }
+
+    private fun playBudgetAlertSound() {
+        try {
+            mediaPlayer = MediaPlayer.create(this, R.raw.budget_alert)
+            mediaPlayer?.setOnCompletionListener {
+                it.release()
+                mediaPlayer = null
+            }
+            mediaPlayer?.start()
         } catch (e: Exception) {
             e.printStackTrace()
         }
@@ -276,5 +308,11 @@ class DashboardActivity : AppCompatActivity() {
             }
             else -> super.onOptionsItemSelected(item)
         }
+    }
+
+    override fun onDestroy() {
+        super.onDestroy()
+        mediaPlayer?.release()
+        mediaPlayer = null
     }
 }
