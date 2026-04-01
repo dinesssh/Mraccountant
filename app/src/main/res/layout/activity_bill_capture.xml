@@ -1,0 +1,33 @@
+<?xml version="1.0" encoding="utf-8"?>
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    android:orientation="vertical"
+    android:padding="16dp"
+    android:gravity="center_horizontal">
+
+    <Button
+        android:id="@+id/btnCaptureBill"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:text="Capture Bill Image" />
+
+    <TextView
+        android:id="@+id/tvBillInfo"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_marginTop="16dp"
+        android:text="Bill Info will appear here"
+        android:textStyle="italic" />
+
+    <ImageView
+        android:id="@+id/ivBillPreview"
+        android:layout_width="match_parent"
+        android:layout_height="0dp"
+        android:layout_weight="1"
+        android:layout_marginTop="16dp"
+        android:scaleType="centerInside"
+        android:background="#EEEEEE"
+        android:contentDescription="Bill Preview" />
+
+</LinearLayout>

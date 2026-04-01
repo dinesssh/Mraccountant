@@ -2,19 +2,16 @@
 <manifest xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:tools="http://tools.android.com/apk/res/android">
 
-    <!-- Permission for Notifications (Required for Android 13+) -->
     <uses-permission android:name="android.permission.POST_NOTIFICATIONS" />
-    <!-- Permission for Alarms -->
     <uses-permission android:name="android.permission.SCHEDULE_EXACT_ALARM" />
-    
-    <!-- Location Permissions -->
     <uses-permission android:name="android.permission.ACCESS_FINE_LOCATION" />
     <uses-permission android:name="android.permission.ACCESS_COARSE_LOCATION" />
-
-    <!-- NEW PERMISSIONS -->
     <uses-permission android:name="android.permission.FOREGROUND_SERVICE" />
     <uses-permission android:name="android.permission.FOREGROUND_SERVICE_DATA_SYNC" />
     <uses-permission android:name="android.permission.SEND_SMS" />
+    <uses-permission android:name="android.permission.INTERNET" />
+    <uses-permission android:name="android.permission.ACCESS_NETWORK_STATE" />
+    <uses-permission android:name="android.permission.CAMERA" />
 
     <application
         android:allowBackup="true"
@@ -25,8 +22,12 @@
         android:roundIcon="@mipmap/ic_launcher_round"
         android:supportsRtl="true"
         android:theme="@style/Theme.MrAccount">
-        
-        <!-- LoginActivity is now the main entry point -->
+
+        <!-- AdMob Sample App ID for Testing -->
+        <meta-data
+            android:name="com.google.android.gms.ads.APPLICATION_ID"
+            android:value="ca-app-pub-3940256099942544~3347511713"/>
+
         <activity
             android:name=".LoginActivity"
             android:exported="true">
@@ -44,10 +45,21 @@
         <activity android:name=".BirthdayReminderActivity" android:exported="false" />
         <activity android:name=".BudgetActivity" android:exported="false" />
         <activity android:name=".HelpVideoActivity" android:exported="false" />
+        <activity android:name=".AboutActivity" android:exported="false" />
+        <activity android:name=".BillCaptureActivity" android:exported="false" />
+
+        <provider
+            android:name="androidx.core.content.FileProvider"
+            android:authorities="${applicationId}.fileprovider"
+            android:exported="false"
+            android:grantUriPermissions="true">
+            <meta-data
+                android:name="android.support.FILE_PROVIDER_PATHS"
+                android:resource="@xml/file_paths" />
+        </provider>
 
         <receiver android:name=".ReminderBroadcastReceiver" android:exported="false" />
 
-        <!-- FORGROUND SERVICE DECLARATION -->
         <service 
             android:name=".ReminderService"
             android:foregroundServiceType="dataSync"

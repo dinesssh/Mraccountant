@@ -4,7 +4,6 @@ import android.Manifest
 import android.app.NotificationChannel
 import android.app.NotificationManager
 import android.content.Context
-import android.content.SharedPreferences
 import android.content.pm.PackageManager
 import android.os.Build
 import android.os.Bundle
@@ -34,6 +33,8 @@ class AddEntryActivity : AppCompatActivity() {
     private val KEY_TOTAL = "total_expense"
     private val KEY_ALERT_SENT = "alert_sent"
     private val KEY_LAST_EXPENSE = "last_expense"
+    private val KEY_FOOD_EXPENSE = "food_expense"
+    private val KEY_TRAVEL_EXPENSE = "travel_expense"
 
     private val requestPermissionLauncher = registerForActivityResult(
         ActivityResultContracts.RequestMultiplePermissions()
@@ -108,31 +109,47 @@ class AddEntryActivity : AppCompatActivity() {
 
     private fun executeSave() {
         val etAmount = findViewById<EditText>(R.id.etAmount)
+        val etCategory = findViewById<EditText>(R.id.etCategory)
         val rbExpense = findViewById<RadioButton>(R.id.rbExpense)
+        
         val amountStr = etAmount.text.toString()
+        val category = etCategory.text.toString().lowercase()
         val amount = amountStr.toDoubleOrNull() ?: 0.0
 
         val prefs = getSharedPreferences(PREF_NAME, Context.MODE_PRIVATE)
+        val editor = prefs.edit()
         
         if (rbExpense.isChecked) {
             val currentTotal = prefs.getFloat(KEY_TOTAL, 0.0f)
-            val budgetLimit = prefs.getFloat(KEY_BUDGET, 5000.0f) // Default 5000 if not set
+            val budgetLimit = prefs.getFloat(KEY_BUDGET, 5000.0f)
             val alertSent = prefs.getBoolean(KEY_ALERT_SENT, false)
             
             val newTotal = currentTotal + amount.toFloat()
             
-            // Update total in prefs
-            prefs.edit().putFloat(KEY_TOTAL, newTotal).apply()
-            
-            // Save last expense
-            prefs.edit().putFloat(KEY_LAST_EXPENSE, amount.toFloat()).apply()
+            // Update specific categories for report
+            if (category.contains("food") || category.contains("eat")) {
+                val currentFood = prefs.getFloat(KEY_FOOD_EXPENSE, 0.0f)
+                editor.putFloat(KEY_FOOD_EXPENSE, currentFood + amount.toFloat())
+            } else if (category.contains("travel") || category.contains("car") || category.contains("bus") || category.contains("fuel")) {
+                val currentTravel = prefs.getFloat(KEY_TRAVEL_EXPENSE, 0.0f)
+                editor.putFloat(KEY_TRAVEL_EXPENSE, currentTravel + amount.toFloat())
+            }
+
+            // Update total and last expense
+            editor.putFloat(KEY_TOTAL, newTotal)
+            editor.putFloat(KEY_LAST_EXPENSE, amount.toFloat())
 
             // SMS Alert Logic
             if (newTotal > budgetLimit && !alertSent) {
                 sendBudgetAlertSms(newTotal, budgetLimit)
-                prefs.edit().putBoolean(KEY_ALERT_SENT, true).apply()
+                editor.putBoolean(KEY_ALERT_SENT, true)
             }
+        } else {
+            // Income logic (optional, but keep total updated if needed)
+            // For now, only focus on expenses for the report
         }
+        
+        editor.apply()
 
         Handler(Looper.getMainLooper()).postDelayed({
             dismissProgressDialog()
@@ -153,7 +170,6 @@ class AddEntryActivity : AppCompatActivity() {
                 }
                 
                 val message = "MrAccountant Alert: Budget Exceeded! Total Expense: $total, Budget Limit: $limit"
-                // Replace with actual user phone number in real scenario
                 val phoneNumber = "5556" 
                 
                 smsManager.sendTextMessage(phoneNumber, null, message, null, null)
