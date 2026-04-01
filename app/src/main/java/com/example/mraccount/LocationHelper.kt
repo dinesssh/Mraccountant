@@ -4,7 +4,9 @@ import android.Manifest
 import android.annotation.SuppressLint
 import android.content.Context
 import android.content.pm.PackageManager
+import android.location.Address
 import android.location.Geocoder
+import android.os.Build
 import androidx.core.content.ContextCompat
 import com.google.android.gms.location.FusedLocationProviderClient
 import com.google.android.gms.location.LocationServices
@@ -36,13 +38,15 @@ class LocationHelper(private val context: Context) {
         fusedLocationClient.getCurrentLocation(Priority.PRIORITY_HIGH_ACCURACY, null)
             .addOnSuccessListener { location ->
                 if (location != null) {
-                    val city = getCityName(location.latitude, location.longitude)
-                    callback(city)
+                    getCityName(location.latitude, location.longitude) { city ->
+                        callback(city)
+                    }
                 } else {
-                    // Fallback to last known location if current is null
                     fusedLocationClient.lastLocation.addOnSuccessListener { lastLoc ->
                         if (lastLoc != null) {
-                            callback(getCityName(lastLoc.latitude, lastLoc.longitude))
+                            getCityName(lastLoc.latitude, lastLoc.longitude) { city ->
+                                callback(city)
+                            }
                         } else {
                             callback(null)
                         }
@@ -54,18 +58,35 @@ class LocationHelper(private val context: Context) {
             }
     }
 
-    private fun getCityName(lat: Double, lng: Double): String? {
-        return try {
-            val geocoder = Geocoder(context, Locale.getDefault())
-            val addresses = geocoder.getFromLocation(lat, lng, 1)
-            if (!addresses.isNullOrEmpty()) {
-                val address = addresses[0]
-                address.locality ?: address.subAdminArea ?: address.adminArea
-            } else {
-                null
+    private fun getCityName(lat: Double, lng: Double, callback: (String?) -> Unit) {
+        val geocoder = Geocoder(context, Locale.getDefault())
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.TIRAMISU) {
+            geocoder.getFromLocation(lat, lng, 1, object : Geocoder.GeocodeListener {
+                override fun onGeocode(addresses: MutableList<Address>) {
+                    if (addresses.isNotEmpty()) {
+                        val address = addresses[0]
+                        callback(address.locality ?: address.subAdminArea ?: address.adminArea)
+                    } else {
+                        callback(null)
+                    }
+                }
+                override fun onError(errorMessage: String?) {
+                    callback(null)
+                }
+            })
+        } else {
+            try {
+                @Suppress("DEPRECATION")
+                val addresses = geocoder.getFromLocation(lat, lng, 1)
+                if (!addresses.isNullOrEmpty()) {
+                    val address = addresses[0]
+                    callback(address.locality ?: address.subAdminArea ?: address.adminArea)
+                } else {
+                    callback(null)
+                }
+            } catch (e: Exception) {
+                callback(null)
             }
-        } catch (e: Exception) {
-            null
         }
     }
 }
