@@ -7,6 +7,8 @@ import android.content.pm.PackageManager
 import android.location.Address
 import android.location.Geocoder
 import android.os.Build
+import android.os.Handler
+import android.os.Looper
 import androidx.core.content.ContextCompat
 import com.google.android.gms.location.FusedLocationProviderClient
 import com.google.android.gms.location.LocationServices
@@ -14,6 +16,11 @@ import com.google.android.gms.location.Priority
 import java.util.Locale
 
 class LocationHelper(private val context: Context) {
+
+    // Functional interface for Java-friendly callbacks
+    fun interface CityCallback {
+        fun onCityDetected(city: String?)
+    }
 
     private val fusedLocationClient: FusedLocationProviderClient =
         LocationServices.getFusedLocationProviderClient(context)
@@ -29,9 +36,9 @@ class LocationHelper(private val context: Context) {
     }
 
     @SuppressLint("MissingPermission")
-    fun getCurrentCity(callback: (String?) -> Unit) {
+    fun getCurrentCity(callback: CityCallback) {
         if (!hasLocationPermissions()) {
-            callback(null)
+            callback.onCityDetected(null)
             return
         }
 
@@ -39,22 +46,22 @@ class LocationHelper(private val context: Context) {
             .addOnSuccessListener { location ->
                 if (location != null) {
                     getCityName(location.latitude, location.longitude) { city ->
-                        callback(city)
+                        Handler(Looper.getMainLooper()).post { callback.onCityDetected(city) }
                     }
                 } else {
                     fusedLocationClient.lastLocation.addOnSuccessListener { lastLoc ->
                         if (lastLoc != null) {
                             getCityName(lastLoc.latitude, lastLoc.longitude) { city ->
-                                callback(city)
+                                Handler(Looper.getMainLooper()).post { callback.onCityDetected(city) }
                             }
                         } else {
-                            callback(null)
+                            Handler(Looper.getMainLooper()).post { callback.onCityDetected(null) }
                         }
                     }
                 }
             }
             .addOnFailureListener {
-                callback(null)
+                Handler(Looper.getMainLooper()).post { callback.onCityDetected(null) }
             }
     }
 

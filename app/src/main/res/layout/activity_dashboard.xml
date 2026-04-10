@@ -26,6 +26,7 @@
             android:paddingStart="16dp"
             android:paddingBottom="24dp">
             <TextView
+                android:id="@+id/tvWelcomeUser"
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
                 android:text="Complex Accounting Overview"
@@ -244,14 +245,16 @@
                     android:layout_height="100dp"
                     android:layout_columnWeight="1"
                     android:layout_margin="8dp"
-                    app:cardCornerRadius="12dp">
+                    app:cardCornerRadius="12dp"
+                    android:clickable="true"
+                    android:focusable="true">
                     <LinearLayout
                         android:layout_width="match_parent"
                         android:layout_height="match_parent"
                         android:gravity="center"
                         android:orientation="vertical">
                         <ImageView android:layout_width="32dp" android:layout_height="32dp" android:src="@android:drawable/ic_menu_today" />
-                        <TextView android:layout_width="wrap_content" android:layout_height="wrap_content" android:layout_marginTop="8dp" android:text="Monthly Summary" />
+                        <TextView android:layout_width="wrap_content" android:layout_height="wrap_content" android:layout_marginTop="8dp" android:text="Summary" />
                     </LinearLayout>
                 </com.google.android.material.card.MaterialCardView>
 
@@ -261,7 +264,9 @@
                     android:layout_height="100dp"
                     android:layout_columnWeight="1"
                     android:layout_margin="8dp"
-                    app:cardCornerRadius="12dp">
+                    app:cardCornerRadius="12dp"
+                    android:clickable="true"
+                    android:focusable="true">
                     <LinearLayout
                         android:layout_width="match_parent"
                         android:layout_height="match_parent"
@@ -301,12 +306,33 @@
                 </com.google.android.material.card.MaterialCardView>
 
                 <com.google.android.material.card.MaterialCardView
+                    android:id="@+id/btnNavBudget"
+                    android:layout_width="0dp"
+                    android:layout_height="100dp"
+                    android:layout_columnWeight="1"
+                    android:layout_margin="8dp"
+                    app:cardCornerRadius="12dp"
+                    android:clickable="true"
+                    android:focusable="true">
+                    <LinearLayout
+                        android:layout_width="match_parent"
+                        android:layout_height="match_parent"
+                        android:gravity="center"
+                        android:orientation="vertical">
+                        <ImageView android:layout_width="32dp" android:layout_height="32dp" android:src="@android:drawable/ic_menu_manage" app:tint="#4CAF50" />
+                        <TextView android:layout_width="wrap_content" android:layout_height="wrap_content" android:layout_marginTop="8dp" android:text="Budget" android:textColor="#4CAF50" />
+                    </LinearLayout>
+                </com.google.android.material.card.MaterialCardView>
+
+                <com.google.android.material.card.MaterialCardView
                     android:id="@+id/btnHelpVideo"
                     android:layout_width="0dp"
                     android:layout_height="100dp"
                     android:layout_columnWeight="1"
                     android:layout_margin="8dp"
-                    app:cardCornerRadius="12dp">
+                    app:cardCornerRadius="12dp"
+                    android:clickable="true"
+                    android:focusable="true">
                     <LinearLayout
                         android:layout_width="match_parent"
                         android:layout_height="match_parent"

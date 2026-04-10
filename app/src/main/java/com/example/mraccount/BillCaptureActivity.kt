@@ -1,6 +1,9 @@
 package com.example.mraccount
 
+import android.Manifest
+import android.content.pm.PackageManager
 import android.net.Uri
+import android.os.Build
 import android.os.Bundle
 import android.widget.Button
 import android.widget.ImageView
@@ -8,6 +11,7 @@ import android.widget.TextView
 import android.widget.Toast
 import androidx.activity.result.contract.ActivityResultContracts
 import androidx.appcompat.app.AppCompatActivity
+import androidx.core.content.ContextCompat
 import androidx.core.content.FileProvider
 import java.io.File
 import java.text.SimpleDateFormat
@@ -19,6 +23,17 @@ class BillCaptureActivity : AppCompatActivity() {
     private lateinit var tvBillInfo: TextView
     private var latestImageUri: Uri? = null
     private var latestImagePath: String? = null
+
+    // Register Permission contract
+    private val requestPermissionLauncher = registerForActivityResult(
+        ActivityResultContracts.RequestPermission()
+    ) { isGranted: Boolean ->
+        if (isGranted) {
+            prepareAndLaunchCamera()
+        } else {
+            Toast.makeText(this, "Camera permission is required to capture bills", Toast.LENGTH_LONG).show()
+        }
+    }
 
     // Register TakePicture contract
     private val takePictureLauncher = registerForActivityResult(ActivityResultContracts.TakePicture()) { success ->
@@ -38,7 +53,18 @@ class BillCaptureActivity : AppCompatActivity() {
         val btnCapture = findViewById<Button>(R.id.btnCaptureBill)
 
         btnCapture.setOnClickListener {
-            prepareAndLaunchCamera()
+            checkCameraPermissionAndCapture()
+        }
+    }
+
+    private fun checkCameraPermissionAndCapture() {
+        when {
+            ContextCompat.checkSelfPermission(this, Manifest.permission.CAMERA) == PackageManager.PERMISSION_GRANTED -> {
+                prepareAndLaunchCamera()
+            }
+            else -> {
+                requestPermissionLauncher.launch(Manifest.permission.CAMERA)
+            }
         }
     }
 
@@ -59,7 +85,6 @@ class BillCaptureActivity : AppCompatActivity() {
 
         // 3. Get URI using FileProvider
         try {
-            // FileProvider.getUriForFile returns a non-nullable Uri
             val uri: Uri = FileProvider.getUriForFile(
                 this,
                 "$packageName.fileprovider",
@@ -68,7 +93,7 @@ class BillCaptureActivity : AppCompatActivity() {
 
             latestImageUri = uri
 
-            // 4. Launch Camera - Passing the non-nullable 'uri' variable
+            // 4. Launch Camera
             takePictureLauncher.launch(uri)
 
         } catch (e: Exception) {
@@ -78,7 +103,6 @@ class BillCaptureActivity : AppCompatActivity() {
     }
 
     private fun displayCapturedBill() {
-        // setImageURI accepts nullable Uri?
         ivBillPreview.setImageURI(latestImageUri)
 
         val fileName = latestImagePath?.let { File(it).name } ?: "Unknown"

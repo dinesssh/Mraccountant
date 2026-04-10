@@ -7,8 +7,10 @@ import android.os.Bundle;
 import android.view.Menu;
 import android.view.MenuItem;
 import android.widget.TextView;
+
 import androidx.appcompat.app.AlertDialog;
 import androidx.appcompat.app.AppCompatActivity;
+
 import com.google.android.gms.ads.AdRequest;
 import com.google.android.gms.ads.AdView;
 import com.google.android.gms.ads.MobileAds;
@@ -16,39 +18,60 @@ import com.google.android.material.appbar.MaterialToolbar;
 import com.google.android.material.bottomnavigation.BottomNavigationView;
 import com.google.android.material.card.MaterialCardView;
 
+import java.util.Locale;
+
 public class DashboardActivity extends AppCompatActivity {
 
     private final String PREF_NAME = "mr_accountant_prefs";
+    private LocationHelper locationHelper;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_dashboard);
 
-        // 1. Initialize Ads
+        // 1. Initialize AdMob Ads
         MobileAds.initialize(this, status -> {});
         AdView mAdView = findViewById(R.id.adView);
-        if (mAdView != null) mAdView.loadAd(new AdRequest.Builder().build());
+        if (mAdView != null) {
+            mAdView.loadAd(new AdRequest.Builder().build());
+        }
 
         // 2. Toolbar Setup
         MaterialToolbar toolbar = findViewById(R.id.toolbar);
         setSupportActionBar(toolbar);
-        if (getSupportActionBar() != null) getSupportActionBar().setDisplayShowTitleEnabled(false);
+        if (getSupportActionBar() != null) {
+            getSupportActionBar().setDisplayShowTitleEnabled(false);
+        }
 
-        // 3. Quick Action Button Listeners
+        // 3. Location Detection
+        locationHelper = new LocationHelper(this);
+        locationHelper.getCurrentCity(city -> {
+            TextView tvLocation = findViewById(R.id.tvWelcomeUser);
+            if (city != null && tvLocation != null) {
+                tvLocation.setText("Location: " + city);
+            }
+        });
+
+        // 4. Button Click Listeners (Quick Actions)
         findViewById(R.id.btnShareReport).setOnClickListener(v -> shareReport());
 
         setupNavButton(R.id.btnNavAddEntry, AddEntryActivity.class);
         setupNavButton(R.id.btnNavSummary, SummaryActivity.class);
+        setupNavButton(R.id.btnNavBudget, BudgetActivity.class);
+        setupNavButton(R.id.btnCaptureBillAction, BillCaptureActivity.class);
         setupNavButton(R.id.btnHelpVideo, HelpVideoActivity.class);
 
-        // 4. Bottom Navigation Logic
+        // 5. Bottom Navigation Logic
         BottomNavigationView nav = findViewById(R.id.bottomNavigation);
         if (nav != null) {
             nav.setOnItemSelectedListener(item -> {
                 int id = item.getItemId();
-                if (id == R.id.nav_reports) startActivity(new Intent(this, ReportsActivity.class));
-                if (id == R.id.nav_settings) showLogoutDialog();
+                if (id == R.id.nav_reports) {
+                    startActivity(new Intent(this, ReportsActivity.class));
+                } else if (id == R.id.nav_settings) {
+                    showLogoutDialog();
+                }
                 return true;
             });
         }
@@ -56,25 +79,31 @@ public class DashboardActivity extends AppCompatActivity {
         updateDashboardStats();
     }
 
-    private void setupNavButton(int id, Class<?> cls) {
+    private void setupNavButton(int id, Class<?> targetActivity) {
         MaterialCardView btn = findViewById(id);
-        if (btn != null) btn.setOnClickListener(v -> startActivity(new Intent(this, cls)));
+        if (btn != null) {
+            btn.setOnClickListener(v -> startActivity(new Intent(DashboardActivity.this, targetActivity)));
+        }
     }
 
     private void updateDashboardStats() {
         SharedPreferences prefs = getSharedPreferences(PREF_NAME, Context.MODE_PRIVATE);
         float total = prefs.getFloat("total_expense", 0.0f);
-        TextView tv = findViewById(R.id.tvTotalExpense);
-        if (tv != null) tv.setText("₹" + String.format("%.0f", total));
+        TextView tvTotal = findViewById(R.id.tvTotalExpense);
+        if (tvTotal != null) {
+            tvTotal.setText(String.format(Locale.getDefault(), "₹%.0f", total));
+        }
     }
 
     private void shareReport() {
         SharedPreferences prefs = getSharedPreferences(PREF_NAME, Context.MODE_PRIVATE);
-        String report = "📊 MrAccountant Summary\nTotal Spent: ₹" + prefs.getFloat("total_expense", 0.0f);
+        float total = prefs.getFloat("total_expense", 0.0f);
+        String report = "📊 MrAccountant Summary\nTotal Spent: ₹" + total + "\n\nManage your budget smarter!";
+        
         Intent intent = new Intent(Intent.ACTION_SEND);
         intent.setType("text/plain");
         intent.putExtra(Intent.EXTRA_TEXT, report);
-        startActivity(Intent.createChooser(intent, "Share via"));
+        startActivity(Intent.createChooser(intent, "Share Report via"));
     }
 
     private void showLogoutDialog() {
@@ -97,7 +126,10 @@ public class DashboardActivity extends AppCompatActivity {
 
     @Override
     public boolean onOptionsItemSelected(MenuItem item) {
-        if (item.getItemId() == R.id.menu_about) startActivity(new Intent(this, AboutActivity.class));
+        if (item.getItemId() == R.id.menu_about) {
+            startActivity(new Intent(this, AboutActivity.class));
+            return true;
+        }
         return super.onOptionsItemSelected(item);
     }
 
